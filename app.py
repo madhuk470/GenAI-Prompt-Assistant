@@ -1,5 +1,7 @@
 import os
 
+import time
+
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -10,7 +12,8 @@ from pydantic import BaseModel
 from google import genai
 from google.genai import types
 
-from storage import save_conversation
+from storage import save_conversation, load_conversations
+
 
 # -----------------------------------
 # 1. Load environment variables
@@ -89,7 +92,7 @@ def generate_response(request: PromptRequest):
         # Call Gemini
         response = client.models.generate_content(
 
-            model="gemini-3.1-flash-lite",
+            model="gemini-3.5-flash-lite",
 
             contents=prompt_with_context,
 
@@ -124,6 +127,23 @@ def generate_response(request: PromptRequest):
 
 # -----------------------------------
 # 7. Serve frontend
+# -----------------------------------
+# -----------------------------------
+# 8. Get conversation history
+# -----------------------------------
+
+@app.get("/history")
+def get_history():
+
+    conversations = load_conversations()
+
+    return {
+        "conversations": conversations
+    }
+
+
+# -----------------------------------
+# 9. Serve frontend
 # -----------------------------------
 
 app.mount(

@@ -12,7 +12,7 @@
 
         body {
             font-family: Arial, sans-serif;
-            max-width: 850px;
+            max-width: 900px;
             margin: 40px auto;
             padding: 20px;
         }
@@ -53,6 +53,25 @@
             padding: 20px;
             border: 1px solid #ccc;
             min-height: 120px;
+            white-space: pre-wrap;
+        }
+
+        #history {
+            margin-top: 40px;
+        }
+
+        .conversation {
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px solid #ccc;
+        }
+
+        .user-prompt {
+            font-weight: bold;
+        }
+
+        .gemini-response {
+            margin-top: 10px;
             white-space: pre-wrap;
         }
 
@@ -117,7 +136,24 @@
     </div>
 
 
+    <!-- Chat History -->
+
+    <div id="history">
+
+        <h2>Chat History</h2>
+
+        <div id="historyList">
+            Loading history...
+        </div>
+
+    </div>
+
+
     <script>
+
+        // -----------------------------------
+        // Generate Gemini response
+        // -----------------------------------
 
         async function sendPrompt() {
 
@@ -190,6 +226,10 @@
                     data.response;
 
 
+                // Refresh history after new response
+                loadHistory();
+
+
             } catch (error) {
 
                 responseBox.innerText =
@@ -199,6 +239,96 @@
             }
 
         }
+
+
+        // -----------------------------------
+        // Load conversation history
+        // -----------------------------------
+
+        async function loadHistory() {
+
+            const historyList =
+                document.getElementById("historyList");
+
+
+            try {
+
+                const response =
+                    await fetch("/history");
+
+
+                const data =
+                    await response.json();
+
+
+                historyList.innerHTML = "";
+
+
+                if (data.conversations.length === 0) {
+
+                    historyList.innerText =
+                        "No conversations yet.";
+
+                    return;
+                }
+
+
+                data.conversations.forEach(
+                    function (conversation, index) {
+
+                        const conversationDiv =
+                            document.createElement("div");
+
+                        conversationDiv.className =
+                            "conversation";
+
+
+                        conversationDiv.innerHTML = `
+
+                            <div class="user-prompt">
+                                ${index + 1}. User Prompt:
+                            </div>
+
+                            <div>
+                                ${conversation.prompt}
+                            </div>
+
+                            <div class="user-prompt">
+                                Gemini Response:
+                            </div>
+
+                            <div class="gemini-response">
+                                ${conversation.response}
+                            </div>
+
+                        `;
+
+
+                        historyList.appendChild(
+                            conversationDiv
+                        );
+
+                    }
+                );
+
+
+            } catch (error) {
+
+                historyList.innerText =
+                    "Unable to load chat history.";
+
+                console.error(error);
+
+            }
+
+        }
+
+
+        // -----------------------------------
+        // Load history when page opens
+        // -----------------------------------
+
+        loadHistory();
 
     </script>
 
